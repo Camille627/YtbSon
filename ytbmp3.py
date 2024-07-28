@@ -1,5 +1,7 @@
 import argparse
 import os
+import shutil
+import subprocess
 from pytubefix import YouTube
 from pydub import AudioSegment
 from mutagen.easyid3 import EasyID3
@@ -26,6 +28,32 @@ def get_video_metadata(url):
         print(f"Erreur de récupération des métadonnées: {e}")
         return None
 
+def check_audio_bitrate(file_path):
+    """
+    Vérifie le débit binaire réel du fichier audio à l'aide de ffmpeg.
+
+    Args:
+        file_path (str): Le chemin du fichier audio.
+
+    Returns:
+        int: Le débit binaire réel en kbps.
+    """
+    try:
+        result = subprocess.run(
+            ['ffmpeg', '-i', file_path],
+            stderr=subprocess.PIPE,
+            universal_newlines=True
+        )
+        for line in result.stderr.split('\n'):
+            if 'Stream #0:0' in line and 'Audio' in line:
+                parts = line.split(',')
+                for part in parts:
+                    if 'kb/s' in part:
+                        return int(part.strip().split(' ')[0])
+    except Exception as e:
+        print(f"Erreur lors de la vérification du débit binaire : {e}")
+    return None
+
 def download_youtube_video_as_mp3(url, output_path):
     """
     Télécharge une vidéo YouTube, extrait l'audio et le convertit en MP3.
@@ -43,6 +71,19 @@ def download_youtube_video_as_mp3(url, output_path):
         
         # Télécharge le flux audio
         out_file = video.download(output_path=output_path)
+
+        # Récupère le débit binaire (abr) du flux audio
+        bitrate = video.abr
+
+        # Sauvegarde et renomme le fichier audio original
+        base, ext = os.path.splitext(out_file)
+        original_audio_file = f"{base}_copie{ext}"
+        shutil.copy(out_file, original_audio_file)
+        print(f"Fichier audio original sauvegardé à : {original_audio_file}")
+
+        # Vérifie le débit binaire réel du fichier téléchargé
+        real_bitrate = check_audio_bitrate(out_file)
+        print(f"Débit binaire réel du fichier audio téléchargé : {real_bitrate} kbps (attendu : {expected_bitrate})")
 
         # Convertit le fichier audio en MP3
         base, ext = os.path.splitext(out_file)
@@ -62,6 +103,7 @@ def download_youtube_video_as_mp3(url, output_path):
             print("Aucune métadonnée récupérée.")
 
         print(f"Conversion réussie ! Fichier MP3 enregistré à : {new_file}")
+        print(f"Débit binaire du flux audio : {bitrate}")
     except Exception as e:
         print(f"Erreur : {e}")
 
