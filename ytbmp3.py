@@ -54,7 +54,7 @@ def check_audio_bitrate(file_path):
         print(f"Erreur lors de la vérification du débit binaire : {e}")
     return None
 
-def download_youtube_video_as_mp3(url, output_path):
+def download_youtube_video_as_mp3(url, output_path, bitrate="124k"):
     """
     Télécharge une vidéo YouTube, extrait l'audio et le convertit en MP3.
 
@@ -72,24 +72,11 @@ def download_youtube_video_as_mp3(url, output_path):
         # Télécharge le flux audio
         out_file = video.download(output_path=output_path)
 
-        # Récupère le débit binaire (abr) du flux audio
-        bitrate = video.abr
-
-        # Sauvegarde et renomme le fichier audio original
-        base, ext = os.path.splitext(out_file)
-        original_audio_file = f"{base}_copie{ext}"
-        shutil.copy(out_file, original_audio_file)
-        print(f"Fichier audio original sauvegardé à : {original_audio_file}")
-
-        # Vérifie le débit binaire réel du fichier téléchargé
-        real_bitrate = check_audio_bitrate(out_file)
-        print(f"Débit binaire réel du fichier audio téléchargé : {real_bitrate} kbps (attendu : {expected_bitrate})")
-
         # Convertit le fichier audio en MP3
         base, ext = os.path.splitext(out_file)
         new_file = base + '.mp3'
         audio = AudioSegment.from_file(out_file)
-        audio.export(new_file, format='mp3')
+        audio.export(new_file, format='mp3', bitrate=bitrate)
         
         # Supprime le fichier audio original
         os.remove(out_file)
@@ -134,6 +121,7 @@ def main():
     parser = argparse.ArgumentParser(description='Télécharger une vidéo YouTube et la convertir en MP3.')
     parser.add_argument('url', type=str, help='URL de la vidéo YouTube')
     parser.add_argument('output_path', type=str, nargs='?', default='', help='Répertoire de destination pour le fichier MP3')
+    parser.add_argument('bitrate', type=int, nargs='?', default=124, help='Average bitrate du fichier MP3')
 
     args = parser.parse_args()
 
@@ -141,7 +129,7 @@ def main():
     if args.output_path == '':
         args.output_path = os.path.join(os.path.expanduser('~'), 'Downloads')
 
-    download_youtube_video_as_mp3(args.url, args.output_path)
+    download_youtube_video_as_mp3(args.url, args.output_path, f"{args.bitrate}k")
 
 if __name__ == '__main__':
     main()
