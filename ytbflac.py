@@ -8,10 +8,9 @@ from mutagen.flac import FLAC
 def convert_to_flac(out_file):
     try:
         base, ext = os.path.splitext(out_file)
-        new_file = base + '.flac'
-        audio = AudioSegment.from_file(out_file)
-        audio.export(new_file, format='flac')
-        return new_file
+        flac_file = base + '.flac'
+        subprocess.run(['ffmpeg', '-i', out_file, flac_file], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        return flac_file
     except Exception as e:
         print(f"Erreur de conversion: {e}")
         return None
@@ -87,7 +86,7 @@ def download_youtube_video_as_flac(url, output_path):
         else:
             print("Aucune métadonnée récupérée.")
 
-        print(f"Conversion réussie ! Fichier FLAC enregistré à : {new_file}")
+        print(f"Succès ! Enregistré à : {new_file}")
     except Exception as e:
         print(f"Erreur : {e}")
 
