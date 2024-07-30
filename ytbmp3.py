@@ -1,7 +1,5 @@
 import argparse
 import os
-import shutil
-import subprocess
 from pytubefix import YouTube
 from pydub import AudioSegment
 from mutagen.easyid3 import EasyID3
@@ -28,32 +26,6 @@ def get_video_metadata(url):
         print(f"Erreur de récupération des métadonnées: {e}")
         return None
 
-def check_audio_bitrate(file_path):
-    """
-    Vérifie le débit binaire réel du fichier audio à l'aide de ffmpeg.
-
-    Args:
-        file_path (str): Le chemin du fichier audio.
-
-    Returns:
-        int: Le débit binaire réel en kbps.
-    """
-    try:
-        result = subprocess.run(
-            ['ffmpeg', '-i', file_path],
-            stderr=subprocess.PIPE,
-            universal_newlines=True
-        )
-        for line in result.stderr.split('\n'):
-            if 'Stream #0:0' in line and 'Audio' in line:
-                parts = line.split(',')
-                for part in parts:
-                    if 'kb/s' in part:
-                        return int(part.strip().split(' ')[0])
-    except Exception as e:
-        print(f"Erreur lors de la vérification du débit binaire : {e}")
-    return None
-
 def download_youtube_video_as_mp3(url, output_path, bitrate="124k"):
     """
     Télécharge une vidéo YouTube, extrait l'audio et le convertit en MP3.
@@ -61,6 +33,7 @@ def download_youtube_video_as_mp3(url, output_path, bitrate="124k"):
     Args:
         url (str): L'URL de la vidéo YouTube.
         output_path (str): Le répertoire où le fichier MP3 sera enregistré.
+        bitrate (str): Le débit binaire du fichier MP3.
     """
     try:
         # Crée un objet YouTube
@@ -121,7 +94,7 @@ def main():
     parser = argparse.ArgumentParser(description='Télécharger une vidéo YouTube et la convertir en MP3.')
     parser.add_argument('url', type=str, help='URL de la vidéo YouTube')
     parser.add_argument('output_path', type=str, nargs='?', default='', help='Répertoire de destination pour le fichier MP3')
-    parser.add_argument('bitrate', type=int, nargs='?', default=124, help='Average bitrate du fichier MP3')
+    parser.add_argument('--bitrate', type=int, default=124, help='Débit binaire du fichier MP3 (en kbps)')
 
     args = parser.parse_args()
 
