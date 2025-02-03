@@ -104,6 +104,7 @@ Pour sélectionner un débit binaire de 320 kbps :
 
 
 -------------------------------------------------
+## Contribution
 
 Merci à Gauthier MARTIN pour ses conseils.
 
