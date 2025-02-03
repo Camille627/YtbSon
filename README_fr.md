@@ -1,6 +1,6 @@
 # YtbSon
 
-YouTube Audio Downloader and Converter
+YouTube Audio Downloader and Converter (actuellement obsolète)
 
 ## Introduction
 
@@ -105,6 +105,6 @@ Pour sélectionner un débit binaire de 320 kbps :
 
 -------------------------------------------------
 
-Encore merci à Gauthier MARTIN pour ses conseils.
+Merci à Gauthier MARTIN pour ses conseils.
 
 Camille ANSEL
